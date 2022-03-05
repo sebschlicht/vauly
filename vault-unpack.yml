@@ -1,0 +1,32 @@
+- name: Unpack the development vault
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    vault_file: vault.yml
+    unpack_env_vars: no
+    unpacked_env_vars_file: .env
+  tasks:
+    - name: decrypt vault
+      include_vars: "{{ vault_file }}"
+    
+    - name: template sensitive files
+      template:
+        dest: "{{ item }}"
+        mode: 0600
+        src: "{{ item }}.j2"
+      loop: "{{ files }}"
+    
+    - name: collect environment variables
+      set_fact:
+        environment_variables: "{{ ( environment_variables | default([]) ) + [ item.key + '=' + (item.value | quote) ] }}"
+      loop: "{{ unpack_env_vars | ternary(env | default({}) | dict2items, [{}]) }}"
+      when: unpack_env_vars
+
+    - name: write environment variables file
+      blockinfile:
+        block: "{{ environment_variables | join('\n') }}"
+        create: yes
+        mode: 0600
+        path: "{{ unpacked_env_vars_file }}"
+      when: unpack_env_vars and ( environment_variables | default([]) | length > 0 )
