@@ -3,10 +3,16 @@
   connection: local
   gather_facts: no
   vars:
+    env: {}
+    environment_variables: []
+    files: []
+    git_repository_root_folder: ''
+    gitignore_path: "{{ git_repository_root_folder }}/{{ gitignore_filename }}"
+    gitignore_filename: .gitignore
     templated_files_file: vauly.yml
-    vault_file: vault.yml
     unpack_env_vars: no
     unpacked_env_vars_file: .env
+    vault_file: vault.yml
   tasks:
     - name: decrypt vault
       include_vars: "{{ vault_file }}"
@@ -20,11 +26,19 @@
         mode: 0600
         src: "{{ item }}.j2"
       loop: "{{ files }}"
-    
+
+    - name: have git ignore templated files
+      blockinfile:
+        block: "/{{ files | join('\n/') }}"
+        create: yes
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: Files generated using vauly"
+        path: "{{ gitignore_path }}"
+      when: git_repository_root_folder | length > 0
+
     - name: collect environment variables
       set_fact:
-        environment_variables: "{{ ( environment_variables | default([]) ) + [ item.key + '=' + (item.value | quote) ] }}"
-      loop: "{{ unpack_env_vars | ternary(env | default({}) | dict2items, [{}]) }}"
+        environment_variables: "{{ environment_variables + [ item.key + '=' + (item.value | quote) ] }}"
+      loop: "{{ unpack_env_vars | ternary(env | dict2items, [{}]) }}"
       when: unpack_env_vars
 
     - name: write environment variables file
@@ -33,4 +47,4 @@
         create: yes
         mode: 0600
         path: "{{ unpacked_env_vars_file }}"
-      when: unpack_env_vars and ( environment_variables | default([]) | length > 0 )
+      when: unpack_env_vars and ( environment_variables | length > 0 )

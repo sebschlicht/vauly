@@ -29,8 +29,9 @@ def get_ansible_playbook_arguments(working_directory):
 def get_unpack_playbook_arguments(working_directory, vault_file, unpacked_env_vars_file):
     arguments = get_ansible_playbook_arguments(working_directory)
     # playbook-specific extra arguments
-    if vault_file:
-        arguments.extend(['-e', f'vault_file="{vault_file}"'])
+    git_repo_root = find_git_repository_root_folder(working_directory)
+    arguments.extend(['-e', f'git_repository_root_folder={git_repo_root}'])
+    arguments.extend(['-e', f'vault_file="{vault_file}"'])
     if unpacked_env_vars_file:
         arguments.extend(['-e', f'unpacked_vault_file="{unpacked_env_vars_file}"'])
     return arguments
@@ -46,9 +47,13 @@ def run_unpack_playbook(working_directory, unpacked_env_vars_file):
 
     result = subprocess.run(["ansible-playbook", tmp_playbook_path] + arguments, capture_output=True)
     if result.returncode:
-        print('[ERROR] Failed to unpack vault:\n\n' + result.stderr.decode('utf-8'))
+        print('[ERROR] Failed to unpack vault:\n\n' + result.stdout.decode('utf-8'))
 
     os.remove(tmp_playbook_path)
+
+def find_git_repository_root_folder(working_directory):
+    result = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True)
+    return result.stdout.decode('utf-8') if result.returncode == 0 else None
 
 def unpack_vault(working_directory):
     run_unpack_playbook(working_directory, None)
@@ -65,9 +70,12 @@ def get_vauly_file_or_exit(working_directory):
         sys.exit(1)
     return vauly_file
 
-def reset_folder(working_directory):
+def load_existing_templated_files(working_directory):
     full_paths = [ os.path.join(working_directory, templated_file) for templated_file in load_templated_files(get_vauly_file_or_exit(working_directory))]
-    for existing_templated_file in [ templated_file for templated_file in full_paths if os.path.isfile(templated_file) ]:
+    return [ templated_file for templated_file in full_paths if os.path.isfile(templated_file) ]
+
+def reset_folder(working_directory):
+    for existing_templated_file in load_existing_templated_files(working_directory):
         os.remove(existing_templated_file)
 
 def run(args):

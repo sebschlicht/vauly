@@ -77,6 +77,5 @@ The installation scripts copies the required files to a dedicated folder in your
 
 ## TODO
 
-* have `.gitignore` created/updated on each unpack, if inside a git project
 * autocompletion
 * installable via ppa/snap ?
