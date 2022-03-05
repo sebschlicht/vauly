@@ -26,12 +26,12 @@
         mode: 0600
         src: "{{ item }}.j2"
       loop: "{{ files }}"
-
+    
     - name: have git ignore templated files
       blockinfile:
-        block: "/{{ files | join('\n/') }}"
+        block: "/.vault_password\n/{{ files | join('\n/') }}"
         create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK: Files generated using vauly"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: vauly"
         path: "{{ gitignore_path }}"
       when: git_repository_root_folder | length > 0
 
