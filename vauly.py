@@ -52,7 +52,7 @@ def run_unpack_playbook(working_directory, unpacked_env_vars_file):
 
         os.remove(tmp_playbook_path)
     else:
-        print(f'[ERROR] Vault file "{vault_file}" not found!')
+        print(f'[ERROR] The vault file "{vault_file}" does not exist. Failed to load vault data!')
 
 def find_git_repository_root_folder(working_directory):
     result = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True)
