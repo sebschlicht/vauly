@@ -37,9 +37,13 @@ in your project directory.
 The `files` variable lists all files that should be templated by vauly.
 When templating, Ansible can replace all variables that have been defined in the vault (here `mongodb.initial_root_password`).
 
-Now simply call vauly in your project directory to have it template the missing file, containing the sensitive information:
+Run vauly in your project directory to template all specified files:
 
     vauly
+
+This process will create the missing `mongo-credentials.env` with the following content:
+
+    MONGODB_INIT_ROOT_PASSWORD=very-secret
 
 ## Installation
 
