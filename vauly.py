@@ -41,15 +41,18 @@ def run_unpack_playbook(working_directory, unpacked_env_vars_file):
     vault_file = os.path.join(working_directory, 'vault.yml')
     arguments = get_unpack_playbook_arguments(working_directory, vault_file, unpacked_env_vars_file)
 
-    # symlink ansible-playbook command and screw Ansible for not having a workingDir option
-    tmp_playbook_path = os.path.join(working_directory, '.unpack-vault.yml')
-    os.system(f'ln -s {playbook_path} {tmp_playbook_path}')
+    if os.path.isfile(vault_file):
+        # symlink ansible-playbook command and screw Ansible for not having a workingDir option
+        tmp_playbook_path = os.path.join(working_directory, '.unpack-vault.yml')
+        os.system(f'ln -s {playbook_path} {tmp_playbook_path}')
 
-    result = subprocess.run(["ansible-playbook", tmp_playbook_path] + arguments, capture_output=True)
-    if result.returncode:
-        print('[ERROR] Failed to unpack vault:\n\n' + result.stdout.decode('utf-8'))
+        result = subprocess.run(["ansible-playbook", tmp_playbook_path] + arguments, capture_output=True)
+        if result.returncode:
+            print('[ERROR] Failed to unpack vault:\n\n' + result.stdout.decode('utf-8'))
 
-    os.remove(tmp_playbook_path)
+        os.remove(tmp_playbook_path)
+    else:
+        print(f'[ERROR] Vault file "{vault_file}" not found!')
 
 def find_git_repository_root_folder(working_directory):
     result = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True)
