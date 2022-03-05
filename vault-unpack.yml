@@ -3,6 +3,7 @@
   connection: local
   gather_facts: no
   vars:
+    templated_files_file: vauly.yml
     vault_file: vault.yml
     unpack_env_vars: no
     unpacked_env_vars_file: .env
@@ -10,6 +11,9 @@
     - name: decrypt vault
       include_vars: "{{ vault_file }}"
     
+    - name: load list of templated files
+      include_vars: "{{ templated_files_file }}"
+
     - name: template sensitive files
       template:
         dest: "{{ item }}"
