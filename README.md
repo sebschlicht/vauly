@@ -43,9 +43,9 @@ Now simply call vauly in your project directory to have it template the missing 
 
 ## Installation
 
-You may just create a symlink in your user's binaries folder to the checked out vauly script:
+The installation scripts copies the required files to a dedicated folder in your home directory and create a symlink for the wrapper script in your user binaries folder:
 
-    ln -s "$( pwd )/vauly.py" ~/bin/vauly
+    ./install.sh
 
 ## TODO
 
@@ -55,5 +55,4 @@ You may just create a symlink in your user's binaries folder to the checked out 
   * init: ignore templated files via .gitignore
   * reset: remove templated files, flag to even free the .gitignore from changes
 * autocompletion
-* installation instructions
 * installable via ppa/snap ?
